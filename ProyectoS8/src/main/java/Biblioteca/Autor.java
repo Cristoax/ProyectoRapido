@@ -2,37 +2,31 @@ package Biblioteca;
 import jakarta.persistence.*;
 import java.util.List;
 
+import jakarta.persistence.*;
+import java.util.List;
+
 @Entity
 @Table(name = "autor")
-
 public class Autor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
 
     private String nombre;
-    private int id;
     private String nacionalidad;
     private int fechaNacimiento;
 
-    @OneToMany(mappedBy = "autor")
+    @OneToMany(mappedBy = "autor", cascade = CascadeType.ALL)
     private List<Libro> libros;
 
-    public Autor(){}
-    
+    public Autor() {}
+
     public Autor(String nombre, int id, String nacionalidad, int fechaNacimiento) {
+        this.id = id; // Si quieres que Hibernate lo genere, puedes omitir este parámetro
         this.nombre = nombre;
-        this.id = id;
         this.nacionalidad = nacionalidad;
         this.fechaNacimiento = fechaNacimiento;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
     }
 
     public int getId() {
@@ -41,6 +35,14 @@ public class Autor {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
     }
 
     public String getNacionalidad() {

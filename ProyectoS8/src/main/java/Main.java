@@ -1,60 +1,56 @@
-package Main;
+import Biblioteca.Autor;
+import Biblioteca.Libro;
+import Biblioteca.Categoria;
 
-import Biblioteca.*;
-import java.util.ArrayList;
+import jakarta.persistence.*;
 import java.util.List;
+import java.util.ArrayList;
 
 public class Main {
-
     public static void main(String[] args) {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("uam");
+        EntityManager em = emf.createEntityManager();
 
+        em.getTransaction().begin();
 
-
-        Autor autor1 = new Autor("Gabriel García Márquez", 1, "Colombiano", 1927);
-        Autor autor2 = new Autor("J. R. R. Tolkien", 2, "Británico", 1892);
-
+        Autor autor1 = new Autor("Gabriel García Márquez", 0, "Colombiano", 1927);
+        Autor autor2 = new Autor("J. R. R. Tolkien", 0, "Británico", 1892);
 
         Categoria catRealismo = new Categoria("Realismo Mágico");
         Categoria catFantasia = new Categoria("Fantasía Épica");
 
-
         Libro libro1 = new Libro("Cien años de soledad", 1967, autor1);
+        libro1.setCategorias(List.of(catRealismo));
+
         Libro libro2 = new Libro("El Hobbit", 1937, autor2);
+        libro2.setCategorias(List.of(catFantasia));
+
         Libro libro3 = new Libro("El señor de los anillos", 1954, autor2);
+        libro3.setCategorias(List.of(catFantasia));
 
+        em.persist(catRealismo);
+        em.persist(catFantasia);
+        em.persist(autor1);
+        em.persist(autor2);
+        em.persist(libro1);
+        em.persist(libro2);
+        em.persist(libro3);
 
-
-        List<Categoria> categoriasLibro1 = new ArrayList<>();
-        categoriasLibro1.add(catRealismo);
-        libro1.setCategorias(categoriasLibro1);
-
-        List<Categoria> categoriasLibro2 = new ArrayList<>();
-        categoriasLibro2.add(catFantasia);
-        libro2.setCategorias(categoriasLibro2);
-
-        List<Categoria> categoriasLibro3 = new ArrayList<>();
-        categoriasLibro3.add(catFantasia);
-        libro3.setCategorias(categoriasLibro3);
-
-        List<Libro> estante = new ArrayList<>();
-        estante.add(libro1);
-        estante.add(libro2);
-        estante.add(libro3);
+        em.getTransaction().commit();
 
         System.out.println("📚--- LISTA DE LIBROS EN LA BIBLIOTECA ---📚");
+        List<Libro> estante = em.createQuery("SELECT l FROM Libro l", Libro.class).getResultList();
 
         for (Libro libro : estante) {
-            // Se crea un texto con los nombres de todas las categorías del libro
-            String nombresCategorias = "";
-            for (Categoria cat : libro.getCategorias()) {
-                nombresCategorias += cat.getNombre() + " ";
-            }
-
-            System.out.println(
-                    "Título: " + libro.getTitulo() +
-                            " | Autor: " + libro.getAutor().getNombre() +
-                            " | Categorías: " + nombresCategorias.trim() // .trim() para quitar el espacio extra al final
-            );
+            String nombresCategorias = libro.getCategorias().stream()
+                    .map(Categoria::getNombre)
+                    .reduce("", (a, b) -> a + b + " ");
+            System.out.println("Título: " + libro.getTitulo() +
+                    " | Autor: " + libro.getAutor().getNombre() +
+                    " | Categorías: " + nombresCategorias.trim());
         }
+
+        em.close();
+        emf.close();
     }
 }
